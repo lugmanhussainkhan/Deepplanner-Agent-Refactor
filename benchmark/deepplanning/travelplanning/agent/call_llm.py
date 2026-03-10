@@ -1,6 +1,7 @@
 """
 Universal LLM calling module
 Supports multiple providers: OpenAI, Anthropic (Claude), Google (Gemini), etc.
+Uses litellm for broad provider support or direct OpenAI client.
 """
 import json
 import os
@@ -9,6 +10,7 @@ from pathlib import Path
 from typing import List, Dict, Any, Optional
 
 import openai
+import litellm
 
 
 def load_model_config(model_name: str) -> Dict[str, Any]:
@@ -89,10 +91,17 @@ def create_client(model_name: str, model_config: Optional[Dict[str, Any]] = None
     if model_type == 'openai':
         # OpenAI and OpenAI-compatible APIs (Qwen, DeepSeek, etc.)
         return openai.OpenAI(api_key=api_key, base_url=base_url)
+    elif model_type == 'litellm':
+        # litellm handles client creation internally; return config for later use
+        return {
+            '_litellm': True,
+            'api_key': api_key,
+            'base_url': base_url,
+        }
     else:
         raise NotImplementedError(
             f"Model type '{model_type}' is not currently supported. "
-            f"Supported types: openai"
+            f"Supported types: openai, litellm"
         )
 
 
@@ -133,6 +142,8 @@ def call_llm(
     # Detect reasoning models (don't support temperature)
     is_reasoning_model = any(x in actual_model_name.lower() for x in ['o1', 'o3', 'o4-mini', 'reasoner'])
     
+    is_litellm = isinstance(client, dict) and client.get('_litellm')
+
     last_err = None
     
     for attempt in range(max_retries):
@@ -148,9 +159,19 @@ def call_llm(
             if not is_reasoning_model and temperature:
                 params["temperature"] = temperature
             
-            if extra_body:
-                params["extra_body"] = extra_body
-            response = client.chat.completions.create(**params)
+            if is_litellm:
+                # litellm uses its own completion function
+                if client.get('api_key'):
+                    params["api_key"] = client['api_key']
+                if client.get('base_url'):
+                    params["api_base"] = client['base_url']
+                if extra_body:
+                    params.update(extra_body)
+                response = litellm.completion(**params)
+            else:
+                if extra_body:
+                    params["extra_body"] = extra_body
+                response = client.chat.completions.create(**params)
             
             # Validate response
             msg = response.choices[0].message

@@ -62,6 +62,7 @@ setup(
         'json5',
         'jsonlines',
         'jsonschema',
+        'litellm',
         'openai',
         'pydantic>=2.3.0',
         'requests',
