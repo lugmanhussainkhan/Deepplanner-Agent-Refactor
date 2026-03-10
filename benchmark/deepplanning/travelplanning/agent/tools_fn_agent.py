@@ -57,6 +57,8 @@ class ToolsFnAgent:
             project_root = Path(__file__).resolve().parent.parent
             self.database_base_path = project_root / 'database' / f'database_{language}'
 
+        self._notes_store: list = []  # Shared notes list, reset per task
+
         self.tools_schema = self._load_tool_schemas()
         self.openai_tools = self._build_openai_tools(self.tools_schema)
         self.tool_instances = self._load_tool_instances()
@@ -138,11 +140,15 @@ class ToolsFnAgent:
             'language': self.language  # Pass language to tool instance
         }
         
+        # Inject shared notes store for note tools
+        tool_name = getattr(tool_cls, 'name', '')
+        if tool_name in ('write_note', 'get_notes'):
+            cfg['notes_store'] = self._notes_store
+        
         if self.sample_id is None:
             return cfg
         
         sample_db_path = self.database_base_path / f'id_{self.sample_id}'
-        tool_name = getattr(tool_cls, 'name', '')
         
         db_mapping = {
             'query_train_info': 'trains/trains.csv',

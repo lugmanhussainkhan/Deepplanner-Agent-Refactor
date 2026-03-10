@@ -235,5 +235,34 @@
         "required": ["todos"]
       }
     }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "write_note",
+      "description": "Use this tool to store intermediate findings, observations and decisions made. This helps you later retrieve key outcomes from the subtasks you completed and correctly complete the final task. ## Examples of When to Use the Write Note Tool <example> Assistant: *Creates a note with the following content* 'Selecting train no: F3829 for Hangzhou → Suzhou since the departure time matches the morning requirement, has 8 remaining seats (2 required), and offers second-class seats that meet the budget requirements.' <reasoning> The assistant generated the above note to persist the decision it made and the reasoning behind the selection, which can later be retrieved while drafting the final itinerary. </reasoning> </example>",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "description": "The note content to save"
+          }
+        },
+        "required": ["note"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "get_notes",
+      "description": "Retrieve all notes saved during the current task. Returns the full list of notes in the order they were written.",
+      "parameters": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
   }
 ]

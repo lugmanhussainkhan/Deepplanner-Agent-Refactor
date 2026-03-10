@@ -9,6 +9,8 @@ from .attraction_query_tool import AttractionDetailsQueryTool, AttractionRecomme
 from .location_search_tool import LocationSearchTool
 from .roadroute_query_tool import RoadRouteInfoQueryTool
 from .restaurant_query_tool import RestaurantRecommendTool, RestaurantDetailsQueryTool
+from .write_todo_tool import WriteTodoTool
+from .note_tool import WriteNoteTool, GetNotesTool
 
 __all__ = [
     'TrainQueryTool',
@@ -20,5 +22,8 @@ __all__ = [
     'RoadRouteInfoQueryTool',
     'RestaurantRecommendTool',
     'RestaurantDetailsQueryTool',
+    'WriteTodoTool',
+    'WriteNoteTool',
+    'GetNotesTool',
 ]
 
