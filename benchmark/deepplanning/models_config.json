@@ -34,7 +34,7 @@
     "gpt-5-mini": {
       "model_name": "gpt-5-mini-2025-08-07",
       "model_type": "openai",
-      "base_url": "https://api.openai.com/v1/models",
+      "base_url": "https://api.openai.com/v1",
       "api_key_env": "OPENAI_API_KEY",
       "temperature": 0.0,
       "extra_body": {
