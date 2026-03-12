@@ -120,11 +120,12 @@ class ToolsFnAgent:
         """
         tools: List[Dict[str, Any]] = []
         
-        is_custom_tools_enabled = os.getenv('CUSTOM_TOOLS_ENABLED', 'false').lower() == 'true'
+        enabled_custom_tools = os.getenv('ENABLED_CUSTOM_TOOLS', "").split(',')
+        custom_tools = ["write_todo", "write_note", "get_notes", "write_draft_plan", "fetch_checklist"]
         
         for s in schemas:
             if isinstance(s, dict) and s.get('type') == 'function' and isinstance(s.get('function'), dict):
-                if not is_custom_tools_enabled and s['function']['name'] in ('write_todo', 'write_note', 'get_notes'):
+                if s['function']['name'] in custom_tools and s['function']['name'] not in enabled_custom_tools:
                     continue
                 
                 tools.append(s)
