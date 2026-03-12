@@ -13,7 +13,8 @@
   "geo_intracity": [
     "Is every change in physical location bridged by a valid transportation activity?",
     "Does the intracity travel duration match the tool query result within a maximum 5-minute deviation?",
-    "Does the itinerary form a complete geographic loop?"
+    "Does the itinerary form a complete geographic loop?",
+    "For every travel_city activity in your draft, is there a directly corresponding tool query that strictly matches its exact Start and End locations, ensuring no route data was assumed, fabricated, or recycled after a change in the itinerary?"
   ],
   "intercity": [
     "Do the departure times, arrival times, and total durations for flights or trains match the tool outputs exactly?"
