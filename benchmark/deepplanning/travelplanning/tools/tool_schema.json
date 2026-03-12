@@ -2,6 +2,40 @@
   {
     "type": "function",
     "function": {
+      "name": "write_draft_plan",
+      "description": "Save a draft plan string.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "draft_plan": {
+            "type": "string",
+            "description": "Draft plan content."
+          }
+        },
+        "required": ["draft_plan"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "fetch_checklist",
+      "description": "Fetch checklist items by optional section_slug from checklist.json. If section_slug is provided and valid, return that section's checklist items and the next section slug. If section_slug is omitted, return the first section and next section slug. If section_slug is invalid, return an error and all available slugs. When the last section is requested, also return a completion message to respond with the plan.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "section_slug": {
+            "type": "string",
+            "description": "Optional checklist section slug/key to fetch."
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
       "name": "query_train_info",
       "description": "查询火车票信息，支持按出发地、目的地、日期等条件查询火车票数据。返回符合条件的火车车次信息，包括：车次号、出发/到达时间、车站信息、行程时长、座位等级、余票状态、价格等。支持直达和中转方案，直达方案显示仅显示第一段行程，中转方案会显示各段行程的详细信息。在旅行计划中，所有火车相关信息必须严格来源于本工具返回的结果，不得自行编造；车站及列车相关名称必须与查询结果完全一致。",
       "parameters": {

@@ -1,0 +1,47 @@
+{
+  "data_format": [
+    "Are all entities and details sourced exclusively from tool queries without fabrication?",
+    "Do the names of all locations and entities match the tool query results exactly?",
+    "Are all daily headers and activity lines strictly following the exact syntax and pipe format?",
+    "Is the 'Current City' field formatted exactly as 'from [Origin City] to [Destination City]' (with a strictly lowercase 'from') on transfer days, or exactly '[City]' on full days, ensuring there is absolutely no extra text, commentary, or parentheses?"
+  ],
+  "time_logic": [
+    "Does the end time of every activity exactly match the start time of the subsequent activity?",
+    "Have reasonable buffers been added for intercity transport (e.g., baggage claim, security)?",
+    "Does every non-final day end with returning to the hotel, and the final day at the departure station/airport?"
+  ],
+  "geo_intracity": [
+    "Is every change in physical location bridged by a valid transportation activity?",
+    "Does the intracity travel duration match the tool query result within a maximum 5-minute deviation?",
+    "Does the itinerary form a complete geographic loop?"
+  ],
+  "intercity": [
+    "Do the departure times, arrival times, and total durations for flights or trains match the tool outputs exactly?"
+  ],
+  "hotel": [
+    "Are hotel check-in, rest, and check-out activities properly sequenced and formatted?",
+    "Does the daily header correctly reflect the hotel name and the per-room/per-night price?"
+  ],
+  "meals": [
+    "Are all meal activities strictly scheduled for 1 to 2 hours?",
+    "Do scheduled meal times fall entirely within the specific restaurant's open hours?",
+    "Is there at least a 2-hour interval between lunch and dinner?",
+    "Have the arrival/departure meal rules been strictly followed based on the transfer day schedule?",
+    "Are all chosen restaurants unique across different days?",
+    "Has breakfast been correctly omitted from the itinerary?"
+  ],
+  "attractions": [
+    "Does the planned visit time strictly fall between the min and max visit hours provided by the tool?",
+    "Does the visit fall entirely within the attraction's operating hours?",
+    "Does a full sightseeing day contain at least 2 attractions or at least 4 hours at a single major attraction?",
+    "If arriving before 12:00 or departing after 16:00 on a transfer day, is at least 1 attraction scheduled?",
+    "Are all attractions unique across the entire trip?"
+  ],
+  "budget": [
+    "Is the total estimated budget less than or equal to the specified maximum budget?",
+    "Is the intracity travel cost calculated as trip price multiplied by the number of vehicles (assuming 4 passengers per vehicle, rounded up)?",
+    "Are intercity transport, attraction, and meal totals accurately calculated per person?",
+    "Is the hotel cost accurately calculated as price per room multiplied by number of rooms and nights?",
+    "Is the itemized budget summary included at the very bottom of the plan tags?"
+  ]
+}

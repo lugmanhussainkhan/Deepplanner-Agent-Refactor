@@ -264,5 +264,39 @@
         "required": []
       }
     }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "fetch_checklist",
+      "description": "Use this tool during the final stage of the planning phase, immediately before generating the final <plan> tags. This tool retrieves specific, rigorous validation questions to ensure the drafted travel itinerary strictly adheres to all formatting, temporal, geospatial, and budgeting constraints. Because generating a complete and error-free travel plan requires tracking many strict rules, you must call this tool to verify your work segment by segment. Review your drafted plan against every question returned. If your plan fails any of the checklist questions (such as incorrect 'Current City' formatting or miscalculated meal buffers), you must correct the plan before your final output.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "section_slug": {
+            "type": "string",
+            "description": "Optional checklist section slug/key to fetch."
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "write_draft_plan",
+      "description": "Use this tool to construct, store, and update a preliminary version of the travel itinerary before presenting the final output to the user. Because generating a complete and error-free travel plan requires strict adherence to complex temporal, spatial, and formatting constraints, you must build the plan iteratively. Your workflow must follow this sequence: First, call this tool to write your initial draft of the complete itinerary. Second, call the fetch_checklist tool to retrieve validation questions for each segment of your draft. Third, strictly evaluate your drafted plan against the checklist. If you discover any errors (e.g., time gaps, incorrect lowercase 'from' usage in the Current City header, missing intracity transport, or budget miscalculations), you must call write_draft_plan again with the fully corrected itinerary to overwrite the previous draft. You may repeat this draft-and-check loop as many times as necessary. Only after the draft passes all validations from the fetch_checklist tool should you output the final, flawless itinerary to the user inside <plan></plan> tags.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "draft_plan": {
+            "type": "string",
+            "description": "Draft plan content."
+          }
+        },
+        "required": ["draft_plan"]
+      }
+    }
   }
 ]

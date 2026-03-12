@@ -207,6 +207,40 @@
   {
     "type": "function",
     "function": {
+      "name": "fetch_checklist",
+      "description": "从 checklist.json 中按可选的 section_slug 获取检查清单项。传入且匹配 section_slug 时，返回该分组的 checklist_items 与下一分组的 slug；未传入时，返回第一个分组及其下一分组 slug；若 section_slug 不存在，返回错误信息与所有可用 slugs；当传入最后一个分组时，返回该分组并附带“所有检查项已完成，请输出计划”的提示消息。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "section_slug": {
+            "type": "string",
+            "description": "可选，检查清单分组的 slug/key。"
+          }
+        },
+        "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "write_draft_plan",
+      "description": "保存草稿计划字符串。",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "draft_plan": {
+            "type": "string",
+            "description": "草稿计划内容。"
+          }
+        },
+        "required": ["draft_plan"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
       "name": "write_todo",
       "description": "编写或更新旅行规划过程中的待办事项列表。接受一组待办事项，每项包含内容描述和状态。",
       "parameters": {
