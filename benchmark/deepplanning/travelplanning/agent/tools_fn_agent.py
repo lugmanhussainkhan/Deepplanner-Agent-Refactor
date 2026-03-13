@@ -282,6 +282,32 @@ class ToolsFnAgent:
         cleaned = [m.strip() for m in matches if m.strip()]
         return "\n\n".join(cleaned) if cleaned else ""
 
+    def _extract_token_usage(self, response) -> Optional[Dict[str, Any]]:
+        """Extract token usage from LLM response object/dict."""
+        usage = getattr(response, 'usage', None)
+        if usage is None and isinstance(response, dict):
+            usage = response.get('usage')
+        if usage is None:
+            return None
+
+        def _read(field: str):
+            if isinstance(usage, dict):
+                return usage.get(field)
+            return getattr(usage, field, None)
+
+        prompt_tokens = _read('prompt_tokens')
+        completion_tokens = _read('completion_tokens')
+        total_tokens = _read('total_tokens')
+
+        if prompt_tokens is None and completion_tokens is None and total_tokens is None:
+            return None
+
+        return {
+            'prompt_tokens': prompt_tokens,
+            'completion_tokens': completion_tokens,
+            'total_tokens': total_tokens,
+        }
+
     def _message_to_dict(self, msg) -> Dict[str, Any]:
         """Convert message object to serializable dictionary"""
         if isinstance(msg, dict):
@@ -368,7 +394,11 @@ class ToolsFnAgent:
             
             msg = resp.choices[0].message
             calls = self._detect_tool_calls(msg)
-            messages.append(msg)
+            assistant_msg = self._message_to_dict(msg)
+            token_usage = self._extract_token_usage(resp)
+            if token_usage is not None:
+                assistant_msg['token_usage'] = token_usage
+            messages.append(assistant_msg)
             if calls:
                 # Execute tool calls
                 for call in calls:
