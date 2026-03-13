@@ -26,6 +26,12 @@
       "base_url": "",
       "api_key_env": "OPENAI_API_KEY"
     },
+    "claude-opus-4-6": {
+      "model_name": "us.anthropic.claude-opus-4-6-v1",
+      "model_type": "litellm",
+      "base_url": "",
+      "api_key_env": "OPENAI_API_KEY"
+    },
     "kimi-k-2-5-baseten": {
       "model_name": "moonshotai/Kimi-K2.5",
       "model_type": "openai",
