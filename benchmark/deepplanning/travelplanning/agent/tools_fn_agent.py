@@ -140,6 +140,12 @@ class ToolsFnAgent:
             }
             if func["name"]:
                 tools.append({"type": "function", "function": func})
+                
+        print("=" * 80)
+        print("Final tool schema:")
+        print(json.dumps(tools, indent=2))
+        print("=" * 80)
+        
         return tools
 
     def _build_tool_config(self, tool_cls) -> Dict[str, Any]:
