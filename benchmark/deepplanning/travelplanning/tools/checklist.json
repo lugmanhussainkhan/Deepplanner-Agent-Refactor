@@ -1,25 +1,25 @@
 {
   "data_format": [
     "Are all entities and details sourced exclusively from tool queries without fabrication?",
-    "Do the names of all locations and entities match the tool query results exactly?",
+    "Do the names of all locations and entities match the tool query results exactly, with no paraphrasing, abbreviation, or substitution?",
     "Are all daily headers and activity lines strictly following the exact syntax and pipe format?",
     "Is the 'Current City' field formatted exactly as 'from [Origin City] to [Destination City]' (with a strictly lowercase 'from') on transfer days, or exactly '[City]' on full days, ensuring there is absolutely no extra text, commentary, or parentheses?"
   ],
   "time_logic": [
-    "Does the end time of every activity exactly match the start time of the subsequent activity?",
-    "Have reasonable buffers been added for intercity transport (e.g., baggage claim, security)?",
+    "Does the end time of every activity exactly match the start time of the subsequent activity, with zero gaps or overlaps?",
+    "Have reasonable buffers been added for intercity transport (e.g., baggage claim, security, boarding)?",
     "Does every non-final day end with returning to the hotel, and the final day at the departure station/airport?"
   ],
   "geo_intracity": [
     "Is every change in physical location bridged by a valid transportation activity?",
-    "Does the intracity travel duration match the tool query result within a maximum 5-minute deviation?",
+    "For every intracity travel segment, does the travel duration in the plan match the tool-queried commute time within a 5-minute tolerance?",
+    "Is the scheduled time gap between leaving one location and arriving at the next consistent with the tool-queried commute time (i.e., the gap, excluding any stated activity buffer, falls within the expected range)?",
     "Does the itinerary form a complete geographic loop?",
-    "For every travel_city activity in your draft, is there a directly corresponding tool query that strictly matches its exact Start and End locations, ensuring no route data was assumed, fabricated, or recycled after a change in the itinerary?"
+    "For every travel_city activity in your draft, is there a directly corresponding tool query that strictly matches its exact start and end locations, ensuring no route data was assumed, fabricated, or recycled after a change in the itinerary?"
   ],
-  "intercity": [
-    "Do the departure times, arrival times, and total durations for flights or trains match the tool outputs exactly?"
-  ],
-  "hotel": [
+  "intercity_and_accommodation": [
+    "Do the departure times, arrival times, and total durations for all flights and trains match the tool outputs exactly?",
+    "Do the prices for all flights and trains in the plan exactly match the prices returned by the tool query, with no rounding, estimation, or substitution?",
     "Are hotel check-in, rest, and check-out activities properly sequenced and formatted?",
     "Does the daily header correctly reflect the hotel name and the per-room/per-night price?"
   ],
@@ -27,6 +27,7 @@
     "Are all meal activities strictly scheduled for 1 to 2 hours?",
     "Do scheduled meal times fall entirely within the specific restaurant's open hours?",
     "Is there at least a 2-hour interval between lunch and dinner?",
+    "Does every full non-transfer day include both a lunch and a dinner (i.e., exactly 2 meals)?",
     "Have the arrival/departure meal rules been strictly followed based on the transfer day schedule?",
     "Are all chosen restaurants unique across different days?",
     "Has breakfast been correctly omitted from the itinerary?"
@@ -38,7 +39,13 @@
     "If arriving before 12:00 or departing after 16:00 on a transfer day, is at least 1 attraction scheduled?",
     "Are all attractions unique across the entire trip?"
   ],
-  "budget": [
+  "personalization_and_budget": [
+    "Have all user-specified must-visit or must-eat venues (named restaurants, named attractions) been included exactly as specified?",
+    "If the user requested free attractions, have all available free attractions from the tool results been included?",
+    "If the user requested a top-rated attraction, has the highest-rated qualifying option from the tool results been selected?",
+    "If the user specified a cuisine type or restaurant tag near a landmark, does the chosen restaurant satisfy both the proximity and the cuisine/tag requirement per tool results?",
+    "Does the selected outbound and inbound transport satisfy the user's stated preference (e.g., cheapest direct, shortest duration, specific seat class), using only options returned by the tool?",
+    "Does the selected hotel satisfy the user's stated preference (e.g., cheapest of a brand, newest decoration, specific star rating) per tool results?",
     "Is the total estimated budget less than or equal to the specified maximum budget?",
     "Is the intracity travel cost calculated as trip price multiplied by the number of vehicles (assuming 4 passengers per vehicle, rounded up)?",
     "Are intercity transport, attraction, and meal totals accurately calculated per person?",
