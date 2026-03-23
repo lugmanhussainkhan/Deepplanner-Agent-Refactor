@@ -37,8 +37,6 @@ class WriteDraftPlanTool(BaseTravelTool):
             # Import here to avoid circular imports
             from .fetch_checklist_tool import FetchChecklistTool
             fetch_tool = FetchChecklistTool(self.cfg)
-            return f"""Draft saved. Proceed to validation. Review the checklist below. If adjustments are needed, update the draft using `write_draft_plan`. Do not proceed to the `next_section_slug` until this section's constraints are perfectly met.
-        
-{fetch_tool.call({})}"""
+            return fetch_tool.call({})
 
         return "Draft plan saved successfully."
