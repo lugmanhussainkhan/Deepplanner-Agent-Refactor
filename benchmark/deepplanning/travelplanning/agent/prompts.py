@@ -617,20 +617,19 @@ PHASE 3 – DRAFTING AND VALIDATION WORKFLOW
 ================================================================
 Before outputting the final `<plan>`, you MUST engage in an iterative drafting and validation loop using the `write_draft_plan` and `fetch_checklist` tools. Do not skip this process.
 
-**Step 1: Write Initial Draft**
-Once you have collected all necessary information via the tool queries, call the `write_draft_plan` tool to construct your preliminary itinerary. This draft must be a complete attempt, including all daily headers, pipelined activity lines, and the final budget summary.
+**Step 1: Write Initial Draft & Receive First Checklist**
+Once you have collected all necessary information via the tool queries, call the `write_draft_plan` tool to construct your preliminary itinerary. This draft must be a complete attempt, including all daily headers, pipelined activity lines, and the final budget summary. The response to this initial tool call will automatically return the first section's checklist items along with the slug for the *next* section. 
 
 **Step 2: Step-by-Step Validation & Immediate Correction**
 You must rigorously validate and correct your draft segment by segment. **Do not fetch all checklists at once; you must evaluate and update the draft iteratively.**
-* **Initial Call:** Call the `fetch_checklist` tool without passing a `section_slug`. The tool will return the first section's checklist items along with the slug for the *next* section.
-* **Validate & Update Draft:** Evaluate your current draft against the returned checklist questions. 
-  *CRITICAL CHECK:* Pay special attention to exact formatting rules
-  *If your draft fails any check* in the current section (e.g., time gaps, geospatial teleportations, budget miscalculations, or formatting deviations), you MUST fix the errors and immediately call `write_draft_plan` with the updated itinerary to overwrite the previous draft **before** moving on.
-* **Continuation:** Only when the draft perfectly passes the current section's checklist should you call `fetch_checklist` again, passing the *next* section slug provided in the previous response.
-* **Completion:** Continue this strict loop—fetch section, validate, correct/rewrite draft (if necessary), then fetch next section—until the tool indicates that the final section has been reached and validated.
+* **Initial Validation:** Evaluate your current draft against the first checklist automatically returned from your initial `write_draft_plan` call. 
+  *CRITICAL CHECK:* Pay special attention to exact formatting rules.
+  *If your draft fails any check* in the current section (e.g., time gaps, geospatial teleportations, budget miscalculations, or formatting deviations), you MUST fix the errors and immediately call `write_draft_plan` again with the updated itinerary to overwrite the previous draft **before** moving on.
+* **Continuation:** Only when the draft perfectly passes the current section's checklist should you call the `fetch_checklist` tool, passing the *next* section slug provided in the previous response.
+* **Completion:** Continue this strict loop—validate, correct/rewrite draft via `write_draft_plan` (if necessary), then fetch the next section via `fetch_checklist`—until the tool indicates that the final section has been reached and validated.
 
 **Step 3: Final Output**
-Only after your drafted plan has successfully passed through every section of the `fetch_checklist` loop, output your final, complete itinerary to the user enclosed strictly within `<plan></plan>` tags. Do not output any additional commentary outside of these tags.
+Only after your drafted plan has successfully passed through every section of the validation loop, output your final, complete itinerary to the user enclosed strictly within `<plan></plan>` tags. Do not output any additional commentary outside of these tags.
 """
 
 

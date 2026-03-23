@@ -12,18 +12,33 @@ class WriteDraftPlanTool(BaseTravelTool):
 
     def __init__(self, cfg: Optional[Dict] = None):
         super().__init__(cfg)
+        self._first_call = True
 
     def call(self, params: Union[str, dict], **kwargs) -> str:
         """
         Accept a draft plan string and return a success message.
+
+        On first call, also fetches and returns the first section checklist
+        to optimize the workflow (saves one turn).
 
         Args:
             params: Dictionary containing:
                 - draft_plan (str): Draft plan content
 
         Returns:
-            Fixed success message
+            On first call: First section checklist from fetch_checklist
+            On subsequent calls: Success message
         """
         params = self._verify_json_format_args(params)
         _ = params.get('draft_plan', '')
-        return "Saved draft plan"
+
+        if self._first_call:
+            self._first_call = False
+            # Import here to avoid circular imports
+            from .fetch_checklist_tool import FetchChecklistTool
+            fetch_tool = FetchChecklistTool(self.cfg)
+            return f"""Draft saved. Proceed to validation. Review the checklist below. If adjustments are needed, update the draft using `write_draft_plan`. Do not proceed to the `next_section_slug` until this section's constraints are perfectly met.
+        
+{fetch_tool.call({})}"""
+
+        return "Draft plan saved successfully."
