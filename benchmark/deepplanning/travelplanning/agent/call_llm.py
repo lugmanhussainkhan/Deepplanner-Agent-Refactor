@@ -78,25 +78,23 @@ def create_client(model_name: str, model_config: Optional[Dict[str, Any]] = None
         model_config = load_model_config(model_name)
     
     model_type = model_config.get('model_type', 'openai')
-    base_url = model_config['base_url']
-    api_key_env = model_config.get('api_key_env')
-    api_key = os.getenv(api_key_env) if api_key_env else None
-    
-    if not api_key:
-        raise RuntimeError(
-            f"API key not found for model '{model_name}'\n"
-            f"Please set environment variable: {api_key_env}"
-        )
     
     if model_type == 'openai':
-        # OpenAI and OpenAI-compatible APIs (Qwen, DeepSeek, etc.)
+        base_url = model_config['base_url']
+        api_key_env = model_config.get('api_key_env')
+        api_key = os.getenv(api_key_env) if api_key_env else None
+        
+        if not api_key:
+            raise RuntimeError(
+                f"API key not found for model '{model_name}'\n"
+                f"Please set environment variable: {api_key_env}"
+            )
+            
         return openai.OpenAI(api_key=api_key, base_url=base_url)
     elif model_type == 'litellm':
         # litellm handles client creation internally; return config for later use
         return {
             '_litellm': True,
-            'api_key': api_key,
-            'base_url': base_url,
         }
     else:
         raise NotImplementedError(
@@ -160,11 +158,6 @@ def call_llm(
                 params["temperature"] = temperature
             
             if is_litellm:
-                # litellm uses its own completion function
-                if client.get('api_key'):
-                    params["api_key"] = client['api_key']
-                if client.get('base_url'):
-                    params["api_base"] = client['base_url']
                 if extra_body:
                     params.update(extra_body)
                 response = litellm.completion(**params)
