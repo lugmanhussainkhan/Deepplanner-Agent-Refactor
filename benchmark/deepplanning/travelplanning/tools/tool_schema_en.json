@@ -278,7 +278,7 @@
             "description": "Checklist section slug to fetch."
           }
         },
-        "required": ["section_slug"]
+        "required": []
       }
     }
   },
