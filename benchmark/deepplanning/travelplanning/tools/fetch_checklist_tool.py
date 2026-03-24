@@ -52,12 +52,16 @@ class FetchChecklistTool(BaseTravelTool):
 
         next_index = current_index + 1
         next_section_slug = self.section_slugs[next_index] if next_index < len(self.section_slugs) else None
-
+        
         response = {
             "section_slug": current_slug,
             "checklist_items": self.checklist_data[current_slug],
             "next_section_slug": next_section_slug
         }
+        
+        if section_slug is None:
+            response["message"] = "Draft plan saved successfully. Validation Loop Initiated. Evaluate your draft against the checklist below. If corrections are needed, call 'write_draft_plan' again. If it passes, call 'fetch_checklist' with the next_section_slug."
+        
 
         if next_section_slug is None:
             response["message"] = "All checklist items completed, respond with the plan once the current checklist items are validated."
