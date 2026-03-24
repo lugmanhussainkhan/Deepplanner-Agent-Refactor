@@ -53,12 +53,12 @@ class FetchChecklistTool(BaseTravelTool):
         next_index = current_index + 1
         next_section_slug = self.section_slugs[next_index] if next_index < len(self.section_slugs) else None
 
-        section_data = self.checklist_data[current_slug]
         response = {
             "section_slug": current_slug,
-            "checklist_items": section_data.get("checklist", []),
+            "checklist_items": self.checklist_data[current_slug],
             "next_section_slug": next_section_slug
         }
+
         if next_section_slug is None:
             response["message"] = "All checklist items completed, respond with the plan once the current checklist items are validated."
 
