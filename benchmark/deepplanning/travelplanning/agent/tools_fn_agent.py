@@ -122,7 +122,7 @@ class ToolsFnAgent:
         tools: List[Dict[str, Any]] = []
         
         enabled_custom_tools = os.getenv('ENABLED_CUSTOM_TOOLS', "").split(',')
-        custom_tools = ["write_todo", "write_note", "get_notes", "write_draft_plan", "fetch_checklist", "create_checkpoint"]
+        custom_tools = ["write_todo", "write_note", "get_notes", "write_draft_plan", "fetch_checklist", "create_checkpoint", "execute_code"]
         
         for s in schemas:
             if isinstance(s, dict) and s.get('type') == 'function' and isinstance(s.get('function'), dict):
@@ -160,6 +160,8 @@ class ToolsFnAgent:
             cfg['notes_store'] = self._notes_store
         if tool_name == 'create_checkpoint':
             cfg['checkpoints_store'] = self._checkpoints_store
+        if tool_name == 'execute_code':
+            cfg['tool_instances'] = self.tool_instances
         
         if self.sample_id is None:
             return cfg
@@ -208,15 +210,33 @@ class ToolsFnAgent:
         if base_tool_cls is None:
             return instances
 
+        # First pass: load all tools except execute_code (which needs
+        # references to the other tool instances).
+        deferred_cls = None
         for cls in base_tool_cls.__subclasses__():
+            tool_name = getattr(cls, 'name', '')
+            if tool_name == 'execute_code':
+                deferred_cls = cls
+                continue
             try:
                 tool_cfg = self._build_tool_config(cls)
                 inst = cls(cfg=tool_cfg)
-                inst_name = getattr(inst, 'name', None) or getattr(cls, 'name', None)
+                inst_name = getattr(inst, 'name', None) or tool_name
                 if inst_name:
                     instances[inst_name] = inst
             except Exception:
                 continue
+
+        # Second pass: initialise execute_code with access to all loaded tools.
+        if deferred_cls is not None:
+            try:
+                cfg = self._build_tool_config(deferred_cls)
+                cfg['tool_instances'] = instances
+                inst = deferred_cls(cfg=cfg)
+                inst_name = getattr(inst, 'name', None) or 'execute_code'
+                instances[inst_name] = inst
+            except Exception:
+                pass
         
         return instances
 

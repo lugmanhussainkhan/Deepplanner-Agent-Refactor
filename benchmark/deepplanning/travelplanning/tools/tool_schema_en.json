@@ -320,7 +320,24 @@
             "description": "A brief note to your future self about what information you need to collect next immediately after this checkpoint is saved."
           }
         },
-        "required": ["milestone_name", "exact_selections", "next_steps"]
+      "required": ["milestone_name", "exact_selections", "next_steps"]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "execute_code",
+      "description": "Execute Python code with access to travel planning tool functions. The following functions are available in the execution environment and can be called directly with keyword arguments: query_train_info, query_flight_info, query_hotel_info, query_road_route_info, query_attraction_details, query_restaurant_details, recommend_attractions, recommend_restaurants, search_location. Standard library modules (json, math, datetime, re, collections) and pandas (as pd) are also available. Use this tool to perform batch queries, data filtering, calculations, or any programmatic data processing across multiple tools in a single call. Each tool function accepts keyword arguments matching its parameter schema and returns the parsed result (dict/list). Example: results = query_train_info(origin='Beijing', destination='Shanghai', depDate='2026-04-15')",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "Python code to execute. The code can use print() for output and/or have a final expression whose value will be returned. Available tool functions: query_train_info(**kwargs), query_flight_info(**kwargs), query_hotel_info(**kwargs), query_road_route_info(**kwargs), query_attraction_details(**kwargs), query_restaurant_details(**kwargs), recommend_attractions(**kwargs), recommend_restaurants(**kwargs), search_location(**kwargs)."
+          }
+        },
+        "required": ["code"]
       }
     }
   }

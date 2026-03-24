@@ -295,7 +295,24 @@
       "parameters": {
         "type": "object",
         "properties": {},
-        "required": []
+      "required": []
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "execute_code",
+      "description": "执行Python代码，代码中可直接调用旅行规划工具函数。执行环境中以下函数可用，使用关键字参数调用：query_train_info、query_flight_info、query_hotel_info、query_road_route_info、query_attraction_details、query_restaurant_details、recommend_attractions、recommend_restaurants、search_location。标准库模块（json、math、datetime、re、collections）和pandas（作为pd）也可用。使用此工具可在单次调用中执行批量查询、数据过滤、计算或跨多个工具的编程数据处理。每个工具函数接受与其参数schema匹配的关键字参数，返回解析后的结果（dict/list）。示例：results = query_train_info(origin='北京', destination='上海', depDate='2026-04-15')",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "要执行的Python代码。代码可使用print()输出，也可以用最后一个表达式的值作为返回值。可用的工具函数：query_train_info(**kwargs)、query_flight_info(**kwargs)、query_hotel_info(**kwargs)、query_road_route_info(**kwargs)、query_attraction_details(**kwargs)、query_restaurant_details(**kwargs)、recommend_attractions(**kwargs)、recommend_restaurants(**kwargs)、search_location(**kwargs)。"
+          }
+        },
+        "required": ["code"]
       }
     }
   }
