@@ -1,79 +1,57 @@
 {
-  "intercity_and_accommodation": {
-    "instruction": "Read-only verification. Compare the plan's transport and hotel entries directly against the raw tool output. Do NOT modify the plan during this step — only flag mismatches. If a mismatch is found, note it and continue checking; you will fix issues after completing all checklist sections.",
-    "checklist": [
-      "Does the selected outbound flight or train satisfy the user's stated preference (e.g., cheapest direct, shortest duration, specific seat class)? Re-read the tool results, list all qualifying options with their prices, and confirm the plan uses the best match.",
-      "Does the selected inbound/return flight or train satisfy the user's stated preference? Re-read the tool results, list all qualifying options with their prices, and confirm the plan uses the best match. If the user only specified a preference for outbound, select the overall cheapest return option.",
-      "For each flight or train in the plan, copy the price from the tool output and compare it character-by-character against the price in the plan. Are they identical? Watch for off-by-one or rounding errors (e.g., ¥516 vs ¥518, ¥196 vs ¥206).",
-      "For multi-segment (transfer) journeys, verify: the tool returns one combined price for the entire route. The plan must NOT show this combined price on each segment separately, and must NOT show ¥0 for connecting segments. Show the combined price on the first segment and annotate accordingly.",
-      "Do the departure times, arrival times, and total durations for all flights and trains match the tool outputs exactly? Compute: arrival_time minus departure_time = X minutes, and verify X equals the tool's stated duration.",
-      "Does the selected hotel strictly satisfy the user's stated preference (e.g., cheapest of a brand, star rating, specific amenity like robot service or SPA) per tool results?",
-      "Does the daily header correctly reflect the hotel name and the per-room/per-night price, matching the tool output exactly?"
-    ]
-  },
-  "time_arithmetic": {
-    "instruction": "This section catches the single most common error: the plan states a correct duration label (e.g., '74min') but the actual time slot is wrong (e.g., 19:30–21:44 = 134min, not 74min). You MUST perform subtraction on every activity's start and end times. Do NOT just confirm the label — compute the slot length independently.",
-    "checklist": [
-      "For EVERY travel_city activity, perform this computation and write it out: (1) Read start_time and end_time from the plan. (2) Compute slot_length = end_time minus start_time in minutes. (3) Read the stated duration from the activity description (e.g., '74min'). (4) Compare: does slot_length equal the stated duration within ±2 minutes? If not, flag it. Example: '19:30–21:44 → 134min ≠ 74min → MISMATCH'.",
-      "For EVERY attraction activity, compute: slot_length = end_time minus start_time. Does it fall between the tool's min and max visit hours? Write out the arithmetic.",
-      "For EVERY meal activity, compute: slot_length = end_time minus start_time. Is it between 60 and 120 minutes?",
-      "Does the end time of every activity exactly match the start time of the subsequent activity, with zero gaps or overlaps? Check each transition explicitly.",
-      "Have reasonable buffers been added for intercity transport? Verify: (a) pre-departure buffer for security/boarding exists before each outbound train or flight, and (b) post-arrival buffer for alighting/baggage exists after each inbound train or flight.",
-      "Does every non-final day end with returning to the hotel? Does the final day end at the departure station or airport?"
-    ]
-  },
-  "intracity_routing": {
-    "instruction": "Read-only verification. Check that every physical movement has a matching tool query. Do NOT reuse, guess, or recycle route data. If a hotel stop or detour was inserted between two activities, verify that the evaluator will see the compound gap as reasonable — the sum of all sub-legs between two 'anchor' locations must approximate the direct commute time between those anchors.",
-    "checklist": [
-      "Is every change in physical location bridged by a valid travel_city or travel_intercity_public activity?",
-      "For every travel_city activity in the plan, does a directly corresponding tool query exist that matches its exact start and end locations? Verify the origin and destination coordinates, not just the names.",
-      "For every travel_city segment, does the plan's stated distance and cost match the tool query result exactly?",
-      "If a detour through the hotel or another intermediate stop was inserted between two activities (e.g., Attraction A → Hotel → Restaurant B), verify: is the total elapsed time from leaving A to arriving at B reasonable compared to the direct A→B commute time? If the sum of sub-legs exceeds the direct commute by more than 15 minutes, consider removing the intermediate stop or rerouting.",
-      "Does the itinerary form a complete geographic loop — starting at the origin city and ending back at the origin city?",
-      "Is every walking segment (¥0 cost, short distance) genuinely walkable, and every driving segment priced correctly per the tool query?"
-    ]
-  },
-  "meals": {
-    "instruction": "Read-only verification. Check every restaurant individually against the tool results. Pay attention to operating hours, closure status, and uniqueness constraints.",
-    "checklist": [
-      "Do scheduled meal times fall entirely within each specific restaurant's opening and closing hours from the tool data? Check each meal individually — write out: 'Restaurant X opens HH:MM, closes HH:MM; meal scheduled HH:MM–HH:MM → within hours? Y/N'.",
-      "Is there at least a 2-hour gap between the end of lunch and the start of dinner on every day that has both? Compute and write out the gap.",
-      "Does every full non-transfer day include exactly 2 meals (lunch and dinner)?",
-      "On transfer days, have the arrival/departure meal rules been followed? If arriving before 12:00, a lunch should be scheduled. If departing after the last meal slot, ensure a meal is included before departure. If arriving after dinner time or departing before lunch, fewer meals are acceptable.",
-      "Are all chosen restaurants unique across the entire trip? List every restaurant used and confirm no duplicates.",
-      "Has breakfast been correctly omitted from the itinerary?",
-      "Is every restaurant selected from the tool results and not fabricated? Does the restaurant name match the tool output exactly, including branch names and parenthetical suffixes?",
-      "If the tool result indicates a restaurant is 'Temporarily Closed', it must NOT be used. Check each restaurant's status in the tool results."
-    ]
-  },
-  "attractions": {
-    "instruction": "Read-only verification. Check every attraction individually. Pay special attention to closure days (day of week), operating hours, and whether all user-requested attractions are present.",
-    "checklist": [
-      "Does each attraction's planned visit fall entirely within its operating hours from the tool data? Write out: 'Attraction X operates HH:MM–HH:MM; visit scheduled HH:MM–HH:MM → within hours? Y/N'.",
-      "Does each attraction's visit duration fall between the tool's stated minimum and maximum visit hours? Write out the arithmetic.",
-      "Check closure days: does any attraction's visit fall on a day of the week when it is closed? Cross-reference the tool's closure day information against the actual day of the week for each visit date. Write out: 'Day N is [weekday]; Attraction X closed on [weekday list] → conflict? Y/N'.",
-      "Does every full sightseeing day (non-transfer, non-travel day) contain at least 2 attractions OR at least 4 hours at a single major attraction?",
-      "On transfer days: if arriving before 12:00, is at least 1 attraction scheduled in the afternoon? If departing after 16:00, is at least 1 attraction scheduled in the morning?",
-      "Are all attractions unique across the entire trip? List every attraction and confirm no duplicates.",
-      "Are all attraction names and ticket prices sourced from tool results and matching exactly?"
-    ]
-  },
-  "personalization_and_budget": {
-    "instruction": "Final holistic audit. Verify every user-specified preference is satisfied, then perform line-by-line budget arithmetic. This is the last section — after completing it, fix any flagged issues from previous sections before producing the final plan.",
-    "checklist": [
-      "Have all user-specified must-visit attractions been included exactly as named?",
-      "Have all user-specified must-eat restaurants or named dining venues been included exactly as named?",
-      "If the user requested free attractions, have ALL available free attractions from the tool results been included? List every free attraction from the tools and check each one against the plan.",
-      "If the user requested a top-rated attraction, re-read the tool results, rank all options by rating, and confirm the highest-rated qualifying option was selected. If there are ties, confirm a valid tied option was chosen.",
-      "If the user specified a cuisine type, restaurant tag, or proximity requirement near a specific landmark, does the chosen restaurant satisfy ALL of: (a) correct cuisine/tag per tool data, (b) proximity to the named landmark, and (c) not temporarily closed?",
-      "Does the selected outbound transport match the user's stated preference (cheapest direct, shortest duration, specific class) from the tool results? Re-verify — do not rely on the earlier section's check alone.",
-      "Does the selected inbound transport match the user's stated preference from the tool results? Re-verify.",
-      "Does the selected hotel match the user's stated preference (brand, star rating, price range, amenity) from the tool results? Re-verify.",
-      "Are all daily headers and activity lines strictly following the exact syntax and pipe format?",
-      "Is the 'Current City' field formatted exactly as 'from [Origin City] to [Destination City]' (lowercase 'from') on transfer days, or exactly '[City]' on full days, with no extra text or parentheses?",
-      "Compute the total budget line by line: (a) Intercity transport: price × number_of_people for each leg. (b) Intracity transport: sum of per-trip costs × number of vehicles (4 passengers per vehicle, rounded up). (c) Accommodation: price_per_room × number_of_rooms × number_of_nights. (d) Meals: price_per_person × number_of_people for each meal. (e) Attractions: ticket_price × number_of_people for each attraction. Write out each multiplication. Sum all categories.",
-      "Is the total estimated budget less than or equal to the user's specified maximum budget (if any)?",
-      "Is the itemized budget summary included at the very bottom, inside the plan tags?"
-    ]
-  }
+  "data_format": [
+    "Are all entities and details sourced exclusively from tool queries without fabrication?",
+    "Do the names of all locations and entities match the tool query results exactly, with no paraphrasing, abbreviation, or substitution?",
+    "Are all daily headers and activity lines strictly following the exact syntax and pipe format?",
+    "Is the 'Current City' field formatted exactly as 'from [Origin City] to [Destination City]' (with a strictly lowercase 'from') on transfer days, or exactly '[City]' on full days, ensuring there is absolutely no extra text, commentary, or parentheses?"
+  ],
+  "time_logic": [
+    "Does the end time of every activity exactly match the start time of the subsequent activity, with zero gaps or overlaps?",
+    "Have reasonable buffers been added for intercity transport (e.g., baggage claim, security, boarding)?",
+    "Does every non-final day end with returning to the hotel, and the final day at the departure station/airport?"
+  ],
+  "geo_intracity": [
+    "Is every change in physical location bridged by a valid transportation activity?",
+    "For every intracity travel segment, does the travel duration in the plan match the tool-queried commute time within a 5-minute tolerance?",
+    "Is the scheduled time gap between leaving one location and arriving at the next consistent with the tool-queried commute time (i.e., the gap, excluding any stated activity buffer, falls within the expected range)?",
+    "Does the itinerary form a complete geographic loop?",
+    "For every travel_city activity in your draft, is there a directly corresponding tool query that strictly matches its exact start and end locations, ensuring no route data was assumed, fabricated, or recycled after a change in the itinerary?"
+  ],
+  "intercity_and_accommodation": [
+    "Do the departure times, arrival times, and total durations for all flights and trains match the tool outputs exactly?",
+    "Do the prices for all flights and trains in the plan exactly match the prices returned by the tool query, with no rounding, estimation, or substitution?",
+    "Are hotel check-in, rest, and check-out activities properly sequenced and formatted?",
+    "Does the daily header correctly reflect the hotel name and the per-room/per-night price?"
+  ],
+  "meals": [
+    "Are all meal activities strictly scheduled for 1 to 2 hours?",
+    "Do scheduled meal times fall entirely within the specific restaurant's open hours?",
+    "Is there at least a 2-hour interval between lunch and dinner?",
+    "Does every full non-transfer day include both a lunch and a dinner (i.e., exactly 2 meals)?",
+    "Have the arrival/departure meal rules been strictly followed based on the transfer day schedule?",
+    "Are all chosen restaurants unique across different days?",
+    "Has breakfast been correctly omitted from the itinerary?",
+    "If a restaurant from the tool results is marked as 'Temporarily Closed' or otherwise unavailable, it must not be selected. Has this been verified for every restaurant in the plan?"
+  ],
+  "attractions": [
+    "Does the planned visit time strictly fall between the min and max visit hours provided by the tool?",
+    "Does the visit fall entirely within the attraction's operating hours?",
+    "Does a full sightseeing day contain at least 2 attractions or at least 4 hours at a single major attraction?",
+    "If arriving before 12:00 or departing after 16:00 on a transfer day, is at least 1 attraction scheduled?",
+    "Are all attractions unique across the entire trip?",
+    "Does any attraction's visit fall on a day of the week when the attraction is closed? Cross-reference the closure days from the tool data against the actual calendar day of each visit."
+  ],
+  "personalization_and_budget": [
+    "Have all user-specified must-visit or must-eat venues (named restaurants, named attractions) been included exactly as specified?",
+    "If the user requested free attractions, have all available free attractions from the tool results been included? List every free attraction returned by the tool and verify each one appears in the plan.",
+    "If the user requested a top-rated attraction, has the highest-rated qualifying option from the tool results been selected?",
+    "If the user specified a cuisine type or restaurant tag near a landmark, does the chosen restaurant satisfy both the proximity and the cuisine/tag requirement per tool results?",
+    "Does the selected outbound and inbound transport satisfy the user's stated preference (e.g., cheapest direct, shortest duration, specific seat class), using only options returned by the tool? List all qualifying options from the tool results to confirm the selected one is the best match.",
+    "Does the selected hotel satisfy the user's stated preference (e.g., cheapest of a brand, newest decoration, specific star rating) per tool results?",
+    "Is the total estimated budget less than or equal to the specified maximum budget?",
+    "Is the intracity travel cost calculated as trip price multiplied by the number of vehicles (assuming 4 passengers per vehicle, rounded up)?",
+    "Are intercity transport, attraction, and meal totals accurately calculated per person?",
+    "Is the hotel cost accurately calculated as price per room multiplied by number of rooms and nights?",
+    "Is the itemized budget summary included at the very bottom of the plan tags?"
+  ]
 }

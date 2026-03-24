@@ -56,7 +56,6 @@ class FetchChecklistTool(BaseTravelTool):
         section_data = self.checklist_data[current_slug]
         response = {
             "section_slug": current_slug,
-            "instruction": section_data.get("instruction", ""),
             "checklist_items": section_data.get("checklist", []),
             "next_section_slug": next_section_slug
         }
