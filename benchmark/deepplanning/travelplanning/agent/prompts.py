@@ -547,6 +547,11 @@ Your plan will be evaluated on the following rules.
           The price shown (e.g., ¥1000/room/night) is per-room, per-night.
           Calculation: total = per-room × number of rooms × nights.
 
+### Crucial Directives: Sorting, Timing, and Routing
+
+* **Delegated Sorting:** Whenever sorting is required, you must always use the tool's optional `sort` parameter with the corresponding enum. Never attempt to manually sort data mentally.
+* **Accurate Time Calculations:** The `query_road_route_info` tool returns travel durations in both minutes and hours. You must be exceptionally careful when calculating timestamps to avoid basic arithmetic errors (e.g., incorrectly calculating an addition to 19:40 as 21:30 when it should be 20:30). Always cross-reference your math using the "duration in hours" output to ensure precise chronological planning.
+* **Efficient Itinerary Routing:** When routing between attractions during the day, build direct paths. Do not add unnecessary intermediate stops back at the hotel unless explicitly requested or required for the night.
 
 ================================================================
 COMPLETE EXAMPLE
