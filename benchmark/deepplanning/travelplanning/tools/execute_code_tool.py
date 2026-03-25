@@ -73,6 +73,12 @@ class ExecuteCodeTool(BaseTravelTool):
         # tool_instances will be injected by the agent via cfg
         self._tool_instances: Dict[str, object] = cfg.get('tool_instances', {}) if cfg else {}
 
+        # Persistent state across calls: accumulated code blocks and a
+        # shared namespace so that variables / functions defined in earlier
+        # turns remain available in later ones.
+        self._code_blocks: list[str] = []
+        self._persistent_namespace: Optional[Dict] = None
+
     def _build_namespace(self) -> Dict:
         """Build the execution namespace with tool wrapper functions and common imports."""
         namespace: Dict = {'__builtins__': __builtins__}
@@ -105,12 +111,32 @@ class ExecuteCodeTool(BaseTravelTool):
 
         return namespace
 
+    def _get_or_create_namespace(self) -> Dict:
+        """Return the persistent namespace, creating it on first use."""
+        if self._persistent_namespace is None:
+            self._persistent_namespace = self._build_namespace()
+        return self._persistent_namespace
+
+    def reset(self) -> None:
+        """Clear accumulated code blocks and the persistent namespace."""
+        self._code_blocks.clear()
+        self._persistent_namespace = None
+
     def call(self, params: Union[str, dict], **kwargs) -> str:
         """
         Execute the provided Python code.
 
+        Code blocks are **accumulated** across calls so that variables,
+        functions, and imports defined in earlier turns remain available in
+        later ones.  The full accumulated code is re-executed each time to
+        ensure a consistent environment, but only the **new** block's stdout
+        and return value are reported back.
+
         Args:
             params: Must contain a ``code`` key with the Python source code.
+                    May optionally contain ``reset`` (bool, default False).
+                    When *reset* is True the accumulated history is cleared
+                    and execution starts fresh from the current code block.
 
         Returns:
             A string combining captured stdout and the value of the last
@@ -118,13 +144,45 @@ class ExecuteCodeTool(BaseTravelTool):
         """
         params = self._verify_json_format_args(params)
         code = params.get('code', '')
+        should_reset = params.get('reset', False)
+
+        # Normalise truthy string values ("true", "True", "1") coming from
+        # JSON-parsed LLM output.
+        if isinstance(should_reset, str):
+            should_reset = should_reset.lower() in ('true', '1', 'yes')
 
         if not code or not code.strip():
             return json.dumps({'error': 'No code provided'}, ensure_ascii=False)
 
-        namespace = self._build_namespace()
+        # ── Handle reset ──────────────────────────────────────────────
+        if should_reset:
+            self.reset()
 
-        # Capture stdout
+        # ── Accumulate the new code block ─────────────────────────────
+        self._code_blocks.append(code)
+
+        # Build the full source: all prior blocks executed silently, then
+        # the new block whose output we actually capture.
+        prior_code = '\n'.join(self._code_blocks[:-1])
+        new_code = self._code_blocks[-1]
+
+        namespace = self._get_or_create_namespace()
+
+        # ── Re-run prior blocks silently to rebuild state ─────────────
+        if prior_code.strip():
+            old_stdout = sys.stdout
+            sys.stdout = io.StringIO()  # discard prior output
+            try:
+                exec(compile(prior_code, '<execute_code:history>', 'exec'), namespace)
+            except Exception:
+                # Prior blocks previously succeeded; if they now fail it
+                # likely means the new block hasn't been executed yet, so
+                # we still continue and let the user see the real error.
+                pass
+            finally:
+                sys.stdout = old_stdout
+
+        # ── Execute the new code block and capture output ─────────────
         old_stdout = sys.stdout
         captured_output = io.StringIO()
         sys.stdout = captured_output
@@ -133,31 +191,30 @@ class ExecuteCodeTool(BaseTravelTool):
         error_output = None
 
         try:
-            # Try to evaluate the last expression separately so we can
-            # capture its value (similar to a REPL).
             import ast
-            tree = ast.parse(code)
+            tree = ast.parse(new_code)
 
-            # If the last statement is an expression, pop it and eval separately
+            # If the last statement is an expression, pop it and eval
+            # separately so we can capture its value (REPL-style).
             last_expr = None
             if tree.body and isinstance(tree.body[-1], ast.Expr):
                 last_expr = ast.Expression(tree.body.pop().value)
                 ast.fix_missing_locations(last_expr)
 
-            # Execute all statements
             if tree.body:
                 exec(compile(tree, '<execute_code>', 'exec'), namespace)
 
-            # Evaluate and capture the last expression's value
             if last_expr is not None:
                 result_value = eval(compile(last_expr, '<execute_code>', 'eval'), namespace)
 
         except Exception:
             error_output = traceback.format_exc()
+            # Roll back the failed block so it doesn't poison future turns
+            self._code_blocks.pop()
         finally:
             sys.stdout = old_stdout
 
-        # Assemble output
+        # ── Assemble output ───────────────────────────────────────────
         stdout_text = captured_output.getvalue()
         parts = []
 
@@ -167,7 +224,6 @@ class ExecuteCodeTool(BaseTravelTool):
         if error_output:
             parts.append(f"[ERROR]\n{error_output}")
         elif result_value is not None:
-            # Pretty-print the return value
             try:
                 formatted = json.dumps(result_value, ensure_ascii=False, indent=2)
             except (TypeError, ValueError):
@@ -176,7 +232,6 @@ class ExecuteCodeTool(BaseTravelTool):
 
         output = '\n'.join(parts) if parts else '(no output)'
 
-        # Truncate if excessively long
         if len(output) > self.MAX_OUTPUT_LENGTH:
             output = output[:self.MAX_OUTPUT_LENGTH] + f'\n... [truncated, total {len(output)} chars]'
 

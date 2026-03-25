@@ -612,9 +612,60 @@ Accommodation: -
 
 </plan>
 
-# Code Execution Environment
+================================================================
+Code Execution Environment
+================================================================
 
 You have access to a Python execution environment where all travel planning tools are available as callable functions. **Use code whenever a task involves computation, comparison, or filtering — do not perform these operations mentally.**
+
+## Persistent Script — Append, Don't Rewrite
+
+Your code executes in a **persistent environment** — variables from previous code blocks survive into the next one. Treat each `execute_code` call as appending to the same running script, not as a fresh start.
+
+**Critical rule: Never copy tool output back into code as hardcoded data.** If you queried `query_train_info(...)` in a previous code block and stored the result in `trains`, that variable still exists. Just reference it directly in the next block.
+
+**WRONG — re-encoding results as literals:**
+```python
+# Block 1
+trains = query_train_info(origin="Paris", destination="Lyon", date="2025-07-01")
+print(trains)
+```
+```python
+# Block 2 — DO NOT DO THIS
+trains = [
+    {"departure_time": "08:00", "price": 45, "segments": [...]},
+    {"departure_time": "10:30", "price": 62, "segments": [...]},
+    ...  # manually copied from Block 1's printed output
+]
+cheapest = min(trains, key=lambda t: t['price'])
+```
+
+**RIGHT — continue from existing variables:**
+```python
+# Block 1
+trains = query_train_info(origin="Paris", destination="Lyon", date="2025-07-01")
+```
+```python
+# Block 2 — variables persist, just use them
+direct = [t for t in trains if len(t['segments']) == 1]
+in_window = [t for t in direct if "17:00" <= t['departure_time'] <= "21:00"]
+cheapest = min(in_window, key=lambda t: t['price'])
+print(cheapest)
+```
+
+**Even better — do it in one block when the logic is known upfront:**
+```python
+# Single block: query → filter → select
+trains = query_train_info(origin="Paris", destination="Lyon", date="2025-07-01")
+direct = [t for t in trains if len(t['segments']) == 1]
+in_window = [t for t in direct if "17:00" <= t['departure_time'] <= "21:00"]
+cheapest = min(in_window, key=lambda t: t['price'])
+print(f"Selected: {cheapest['departure_time']} — €{cheapest['price']}")
+```
+
+**When to split across blocks vs. keep in one block:**
+- **One block** (preferred): when you know the full pipeline upfront — query, filter, sort, select.
+- **Multiple blocks**: when the next step depends on inspecting intermediate results (e.g., checking what fields are available, or deciding a filter threshold after seeing the data range). Even then, reference existing variables — never re-type printed output.
 
 ## When to Write Code
 
@@ -629,10 +680,11 @@ arrival = dep + timedelta(minutes=74)
 print(arrival.strftime("%H:%M"))  # "20:44"
 ```
 
-**Sorting and selecting** — Never eyeball which option is cheapest, shortest, highest-rated, or closest. Always sort programmatically.
+**Sorting and selecting** — Never eyeball which option is cheapest, shortest, highest-rated, or closest. Always sort programmatically, in the same block as the query.
 ```python
 restaurants = recommend_restaurants(location=...)
 best = max(restaurants, key=lambda r: r['rating'])
+print(f"Best rated: {best['name']} ({best['rating']})")
 ```
 
 **Distance calculation** — Never estimate proximity by inspecting coordinates.
@@ -649,12 +701,14 @@ def haversine(lat1, lon1, lat2, lon2):
 closest = min(restaurants, key=lambda r: haversine(target_lat, target_lon, r['latitude'], r['longitude']))
 ```
 
-**Filtering** — Apply constraints before selecting.
+**Filtering** — Apply constraints before selecting. Always query and filter in the same block.
 ```python
+# Query and filter in one pass — don't split these across blocks
 trains = query_train_info(origin=..., destination=..., date=...)
 direct = [t for t in trains if len(t['segments']) == 1]
 in_window = [t for t in direct if "17:00" <= t['departure_time'] <= "21:00"]
 cheapest = min(in_window, key=lambda t: t['price'])
+print(f"Selected train: {cheapest['departure_time']} — {cheapest['price']}")
 ```
 
 **Price and value extraction** — Never transcribe prices from memory. Store tool results in variables and reference them directly when building the plan.
@@ -674,6 +728,8 @@ print(f"Direct: {direct['duration_minutes']}min | Via hotel: {detour_total}min |
 Do not use code for reasoning about user preferences, deciding which attractions to visit, choosing the sequence of activities, or any qualitative planning decision. Use code only for computation and data operations.
 
 ## Building the Plan
+
+Build the entire itinerary in a **single growing script**. Query all needed data, compute all times, and produce the final formatted plan in one code block. Do not query routes in one block, then re-type the durations into a second block — the variables already exist, so keep building on them.
 
 When constructing the itinerary, use code to compute each activity's end time from its start time and duration. Chain activities by passing the previous `arrival_time` as the next `start_time`. This ensures zero time gaps and correct arithmetic throughout the plan.
 

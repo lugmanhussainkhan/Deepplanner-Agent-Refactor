@@ -309,7 +309,11 @@
         "properties": {
           "code": {
             "type": "string",
-            "description": "要执行的Python代码。代码可使用print()输出，也可以用最后一个表达式的值作为返回值。可用的工具函数：query_train_info(**kwargs)、query_flight_info(**kwargs)、query_hotel_info(**kwargs)、query_road_route_info(**kwargs)、query_attraction_details(**kwargs)、query_restaurant_details(**kwargs)、recommend_attractions(**kwargs)、recommend_restaurants(**kwargs)、search_location(**kwargs)。"
+            "description": "要执行的Python代码。代码块会跨调用累积——之前调用中定义的变量、函数和导入在后续调用中仍然可用，因此只需编写新增/增量代码即可。代码可使用print()输出，也可以用最后一个表达式的值作为返回值。可用的工具函数：query_train_info(**kwargs)、query_flight_info(**kwargs)、query_hotel_info(**kwargs)、query_road_route_info(**kwargs)、query_attraction_details(**kwargs)、query_restaurant_details(**kwargs)、recommend_attractions(**kwargs)、recommend_restaurants(**kwargs)、search_location(**kwargs)。"
+          },
+          "reset": {
+            "type": "boolean",
+            "description": "设为true时，清除所有之前累积的代码块，从当前代码块重新开始执行。默认为false。"
           }
         },
         "required": ["code"]

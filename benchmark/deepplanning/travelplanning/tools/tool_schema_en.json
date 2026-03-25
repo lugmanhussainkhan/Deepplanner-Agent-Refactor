@@ -334,7 +334,11 @@
         "properties": {
           "code": {
             "type": "string",
-            "description": "Python code to execute. The code can use print() for output and/or have a final expression whose value will be returned. Available tool functions: query_train_info(**kwargs), query_flight_info(**kwargs), query_hotel_info(**kwargs), query_road_route_info(**kwargs), query_attraction_details(**kwargs), query_restaurant_details(**kwargs), recommend_attractions(**kwargs), recommend_restaurants(**kwargs), search_location(**kwargs)."
+            "description": "Python code to execute. Code blocks are accumulated across calls — variables, functions, and imports defined in previous calls remain available in subsequent ones, so you only need to write the new/incremental code. The code can use print() for output and/or have a final expression whose value will be returned. Available tool functions: query_train_info(**kwargs), query_flight_info(**kwargs), query_hotel_info(**kwargs), query_road_route_info(**kwargs), query_attraction_details(**kwargs), query_restaurant_details(**kwargs), recommend_attractions(**kwargs), recommend_restaurants(**kwargs), search_location(**kwargs)."
+          },
+          "reset": {
+            "type": "boolean",
+            "description": "When true, all previously accumulated code blocks are discarded and execution starts fresh from the current code block. Defaults to false."
           }
         },
         "required": ["code"]
