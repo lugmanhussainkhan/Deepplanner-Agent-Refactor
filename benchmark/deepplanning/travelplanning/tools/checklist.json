@@ -8,6 +8,7 @@
     "Provide a directly corresponding tool query that strictly matches the exact start and end locations for every travel_city activity, ensuring no route data is assumed, fabricated, or recycled after a change in the itinerary."
   ],
   "intercity_and_accommodation": [
+    "Strictly validate that the chosen outbound and inbound flights or trains satisfy all user-specified constraints (e.g., 'cheapest direct', 'shortest duration', or specific 'departure time range').",
     "Match the departure times, arrival times, and total durations for all flights and trains exactly to the tool outputs.",
     "Ensure the prices for all flights and trains in the plan exactly match the prices returned by the tool query, with no rounding, estimation, or substitution.",
     "Assign the full, correct database price to each individual segment exactly as returned by the tool for multi-segment journeys. Never split the price, assign ¥0, or label secondary segments as 'included'; all segments must have the full price.",

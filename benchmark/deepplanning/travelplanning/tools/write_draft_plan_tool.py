@@ -10,6 +10,19 @@ from typing import Any, Dict, List, Optional, Union
 from .base_travel_tool import BaseTravelTool, register_tool
 
 
+MEAL_INSTRUCTION = """## Meal Time Slots & Requirements:
+- On a full sightseeing day (not a city transfer day): lunch and dinner must both be scheduled.
+- On transfer days: the number of meals depends on the actual effective stay in the destination city.
+Arrival:
+    Arrive morning (before 10:00): schedule both lunch and dinner.
+    Arrive afternoon (10:00–15:00): schedule dinner; lunch is optional.
+    Arrive evening (after 15:00): do not schedule meals or only schedule one dinner.
+Departure:
+    Leave early morning (before 9:00): do not arrange meals in this city.
+    Leave late morning to afternoon (9:00–15:00): lunch is optional, dinner is not scheduled.
+    Leave afternoon/evening (after 15:00): at least one lunch, dinner is optional.
+"""
+
 # Mapping of checklist sections to their relevant tool names
 SECTION_TOOL_MAPPING = {
     'intercity_and_accommodation': ['query_train_info', 'query_flight_info', 'query_hotel_info'],
@@ -214,6 +227,9 @@ class WriteDraftPlanTool(BaseTravelTool):
         ]
         if tool_results:
             parts.append(f"## Relevant Tool Results\n{tool_results}")
+            
+        if section_name == 'meals':
+            parts.append(MEAL_INSTRUCTION)
 
         checklist_text = '\n'.join(f"- {item}" for item in checklist_items)
         parts.append(f"## Checklist for Section: {section_name}\n{checklist_text}")
