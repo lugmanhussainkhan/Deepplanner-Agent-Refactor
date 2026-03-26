@@ -562,7 +562,7 @@ def run_agent_inference(
                 'results': []
             }
     
-    test_data = test_data[11:30]
+    test_data = [test_data[22], test_data[23], test_data[28]]
     
     # test_data_limit = os.getenv('TEST_DATA_LIMIT', None)
     # if test_data_limit is not None:
