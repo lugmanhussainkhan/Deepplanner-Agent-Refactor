@@ -59,6 +59,7 @@ class ToolsFnAgent:
 
         self._notes_store: list = []  # Shared notes list, reset per task
         self._checkpoints_store: list = []  # Shared checkpoints list, reset per task
+        self._agent_context: dict = {'model': self.model, 'messages': []}  # Shared context for evaluation tools
         
         self.tools_schema = self._load_tool_schemas()
         self.openai_tools = self._build_openai_tools(self.tools_schema)
@@ -160,6 +161,8 @@ class ToolsFnAgent:
             cfg['notes_store'] = self._notes_store
         if tool_name == 'create_checkpoint':
             cfg['checkpoints_store'] = self._checkpoints_store
+        if tool_name == 'write_draft_plan':
+            cfg['agent_context'] = self._agent_context
         
         if self.sample_id is None:
             return cfg
@@ -457,6 +460,9 @@ class ToolsFnAgent:
         messages.append({"role": "user", "content": user_query})
         full_messages.append({"role": "user", "content": user_query})
         
+        # Share full_messages reference with evaluation tools (e.g. write_draft_plan)
+        self._agent_context['messages'] = full_messages
+        
         llm_budget = max_llm_calls
         
         while llm_budget > 0:
@@ -484,6 +490,11 @@ class ToolsFnAgent:
                         "name": call['name'],
                         "content": tool_result,
                     }
+                    # Attach eval token usage produced by write_draft_plan
+                    if call['name'] == 'write_draft_plan':
+                        eval_usage = self._agent_context.get('eval_token_usage')
+                        if eval_usage:
+                            tool_msg['eval_token_usage'] = eval_usage
                     messages.append(tool_msg)
                     full_messages.append(tool_msg)
                     

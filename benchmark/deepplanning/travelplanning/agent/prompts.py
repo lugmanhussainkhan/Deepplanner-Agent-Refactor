@@ -548,16 +548,6 @@ Your plan will be evaluated on the following rules.
           Calculation: total = per-room × number of rooms × nights.
 
 ================================================================
-CRUCIAL DIRECTIVES
-================================================================
-
-* **Delegated Sorting:** Whenever sorting is required, you must always use the tool's optional `sort` parameter with the corresponding enum. NEVER attempt to mentally sort data.
-* **Accurate Time Calculations:** The `query_road_route_info` tool returns travel durations in both minutes and hours. You must be exceptionally careful when calculating timestamps to avoid basic arithmetic errors (e.g., incorrectly calculating an addition to 19:40 as 21:30 when it should be 20:30). Cross-reference your math using the "duration in hours" output. *Never arbitrarily inflate travel times with hidden buffers; trust and use the authoritative tool data exactly.*
-* **Efficient Itinerary Routing:** When routing between attractions during the day, build direct paths. Do not add unnecessary intermediate stops back at the hotel unless explicitly requested or required for the night.
-* **Multi-Segment Pricing Integrity:** When a tool returns a single, combined price for a multi-segment journey, *never* split the price, assign ¥0, or label secondary segments as "included." You must assign the full, correct database price to each individual segment to ensure accurate per-transport-number validation.
-* **Literal Constraint Interpretation:** Follow explicit user constraints rigidly over subjective optimization. If asked for the "cheapest direct train," select the lowest ticket price, not the lowest "total trip cost." If a time window is specified, pick a valid option within it rather than filtering by personal heuristics like "arrives too late."
-
-================================================================
 COMPLETE EXAMPLE
 ================================================================
 Query: Can you create a travel plan for 2 people from Shanghai to Beijing, from Nov 4th to Nov 6th, 2025, one room, budget 10,000 RMB?
@@ -617,21 +607,28 @@ Accommodation: -
 ================================================================
 PHASE 3 – DRAFTING AND VALIDATION WORKFLOW
 ================================================================
-Before outputting the final `<plan>`, you MUST engage in an iterative drafting and validation loop using the `write_draft_plan` and `fetch_checklist` tools. Do not skip this process.
 
-**Step 1: Write Initial Draft & Receive First Checklist**
-Once you have collected all necessary information via the tool queries, call the `write_draft_plan` tool to construct your preliminary itinerary. This draft must be a complete attempt, including all daily headers, pipelined activity lines, and the final budget summary. *Note: Upon making this initial call, the tool will automatically return the first section's checklist items along with the slug for the next section.*
+Before outputting the final `<plan>`, you MUST engage in a drafting and validation loop using the `write_draft_plan` tool. Do not skip
+this process.
 
-**Step 2: Step-by-Step Validation & Immediate Correction**
-You must rigorously validate and correct your draft segment by segment. **Do not fetch all checklists at once; you must evaluate and update the draft iteratively.**
-* **Validate & Update Draft:** Evaluate your current draft against the checklist questions returned from your initial draft submission. 
-  *CRITICAL CHECK:* Pay special attention to exact formatting rules.
-  *If your draft fails any check* in the current section (e.g., time gaps, geospatial teleportations, budget miscalculations, or formatting deviations), you MUST fix the errors and immediately call `write_draft_plan` with the updated itinerary to overwrite the previous draft **before** moving on.
-* **Continuation:** Only when the draft perfectly passes the current section's checklist should you call the `fetch_checklist` tool, passing the *next* section slug provided in the previous response.
-* **Completion:** Continue this strict loop—evaluate, correct/rewrite draft via `write_draft_plan` (if necessary), then fetch the next section via `fetch_checklist`—until the tool indicates that the final section has been reached and validated.
+**Step 1: Write Initial Draft**
+
+Once you have collected all necessary information via tool queries, call `write_draft_plan` with your complete preliminary itinerary. This draft must be a full attempt — all daily headers, activity lines, transport segments, and the final budget summary. Do not submit a partial draft.
+
+**Step 2: Review Validation Results & Correct**
+
+When you call `write_draft_plan`, you will receive a compiled validation report as the tool response, containing per-section verdicts with specific findings.
+
+* **If the report contains any "fail" verdicts:** Read each finding carefully. The report includes `plan_value` and `source_value` fields showing exactly what your draft states versus what the tool data states. Use these to make precise corrections. Then call `write_draft_plan` again with the fully corrected itinerary. Do not attempt to fix only the flagged items — recheck adjacent content that may be affected by your corrections (e.g., fixing a flight time may cascade into transfer windows, activity scheduling, and budget totals).
+
+* **If all sections pass:** Proceed to Step 3.
+
+You may repeat this draft-and-validate cycle as many times as needed. Each call to `write_draft_plan` must contain the complete, updated itinerary — not a partial patch.
 
 **Step 3: Final Output**
-Only after your drafted plan has successfully passed through every section of the validation loop, output your final, complete itinerary to the user enclosed strictly within `<plan></plan>` tags. Do not output any additional commentary outside of these tags.
+
+Only after your draft receives a fully passing validation report(no "fail" verdicts across any section), output your final
+itinerary to the user enclosed strictly within `<plan></plan>` tags. The final plan should be identical to the last validated draft. Do not output any additional commentary outside of these tags.
 """
 
 

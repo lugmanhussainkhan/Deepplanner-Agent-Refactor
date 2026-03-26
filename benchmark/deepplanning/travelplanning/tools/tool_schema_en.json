@@ -301,7 +301,7 @@
     "type": "function",
     "function": {
       "name": "write_draft_plan",
-      "description": "Use this tool to construct, store, and update a preliminary version of the travel itinerary before presenting the final output to the user. Because generating a complete and error-free travel plan requires strict adherence to complex temporal, spatial, and formatting constraints, you must build the plan iteratively. Your workflow must follow this sequence: First, call this tool to write your initial draft of the complete itinerary. Second, call the fetch_checklist tool to retrieve validation questions for each segment of your draft. Third, strictly evaluate your drafted plan against the checklist. If you discover any errors (e.g., time gaps, incorrect lowercase 'from' usage in the Current City header, missing intracity transport, or budget miscalculations), you must call write_draft_plan again with the fully corrected itinerary to overwrite the previous draft. You may repeat this draft-and-check loop as many times as necessary. Only after the draft passes all validations from the fetch_checklist tool should you output the final, flawless itinerary to the user inside <plan></plan> tags.",
+      "description": "Use this tool to submit a complete draft of the travel itinerary for validation. When called, the system runs an independent audit of your draft and returns a compiled validation report with per-section pass/fail verdicts, specific error findings, and the exact plan vs. source values for any discrepancy.Every call must contain the complete itinerary — not a partial update.",
       "parameters": {
         "type": "object",
         "properties": {
