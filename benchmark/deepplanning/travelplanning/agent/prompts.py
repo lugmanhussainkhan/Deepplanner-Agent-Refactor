@@ -547,11 +547,15 @@ Your plan will be evaluated on the following rules.
           The price shown (e.g., ¥1000/room/night) is per-room, per-night.
           Calculation: total = per-room × number of rooms × nights.
 
-### Crucial Directives: Sorting, Timing, and Routing
+================================================================
+CRUCIAL DIRECTIVES
+================================================================
 
-* **Delegated Sorting:** Whenever sorting is required, you must always use the tool's optional `sort` parameter with the corresponding enum. Never attempt to manually sort data mentally.
-* **Accurate Time Calculations:** The `query_road_route_info` tool returns travel durations in both minutes and hours. You must be exceptionally careful when calculating timestamps to avoid basic arithmetic errors (e.g., incorrectly calculating an addition to 19:40 as 21:30 when it should be 20:30). Always cross-reference your math using the "duration in hours" output to ensure precise chronological planning.
+* **Delegated Sorting:** Whenever sorting is required, you must always use the tool's optional `sort` parameter with the corresponding enum. NEVER attempt to mentally sort data.
+* **Accurate Time Calculations:** The `query_road_route_info` tool returns travel durations in both minutes and hours. You must be exceptionally careful when calculating timestamps to avoid basic arithmetic errors (e.g., incorrectly calculating an addition to 19:40 as 21:30 when it should be 20:30). Cross-reference your math using the "duration in hours" output. *Never arbitrarily inflate travel times with hidden buffers; trust and use the authoritative tool data exactly.*
 * **Efficient Itinerary Routing:** When routing between attractions during the day, build direct paths. Do not add unnecessary intermediate stops back at the hotel unless explicitly requested or required for the night.
+* **Multi-Segment Pricing Integrity:** When a tool returns a single, combined price for a multi-segment journey, *never* split the price, assign ¥0, or label secondary segments as "included." You must assign the full, correct database price to each individual segment to ensure accurate per-transport-number validation.
+* **Literal Constraint Interpretation:** Follow explicit user constraints rigidly over subjective optimization. If asked for the "cheapest direct train," select the lowest ticket price, not the lowest "total trip cost." If a time window is specified, pick a valid option within it rather than filtering by personal heuristics like "arrives too late."
 
 ================================================================
 COMPLETE EXAMPLE
